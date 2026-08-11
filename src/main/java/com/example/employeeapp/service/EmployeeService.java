@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,21 +26,29 @@ public class EmployeeService {
 
     @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
     public EmployeeResponse create(EmployeeRequest request) {
+
         Department department = findDepartmentOrThrow(request.getDepartmentId());
 
         Employee employee = new Employee();
+
         applyRequest(employee, request, department);
 
         Employee saved = employeeRepository.save(employee);
+
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public EmployeeResponse getById(Long id) {
+
         Employee employee = findEmployeeOrThrow(id);
+
         return toResponse(employee);
     }
 
+    @Transactional(readOnly = true)
     public List<EmployeeResponse> getAll() {
+
         return employeeRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -48,22 +57,31 @@ public class EmployeeService {
 
     @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
     public EmployeeResponse update(Long id, EmployeeRequest request) {
+
         Employee employee = findEmployeeOrThrow(id);
+
         Department department = findDepartmentOrThrow(request.getDepartmentId());
 
         applyRequest(employee, request, department);
 
         Employee updated = employeeRepository.save(employee);
+
         return toResponse(updated);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public void delete(Long id) {
+
         Employee employee = findEmployeeOrThrow(id);
+
         employeeRepository.delete(employee);
     }
 
-    private void applyRequest(Employee employee, EmployeeRequest request, Department department) {
+    private void applyRequest(
+            Employee employee,
+            EmployeeRequest request,
+            Department department) {
+
         employee.setName(request.getName());
         employee.setEmail(request.getEmail());
         employee.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -77,17 +95,23 @@ public class EmployeeService {
     }
 
     private Employee findEmployeeOrThrow(Long id) {
+
         return employeeRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
+                .orElseThrow(() -> new EmployeeNotFoundException(
+                        "Employee not found with id: " + id));
     }
 
     private Department findDepartmentOrThrow(Long departmentId) {
+
         return departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new DepartmentNotFoundException("Department not found with id: " + departmentId));
+                .orElseThrow(() -> new DepartmentNotFoundException(
+                        "Department not found with id: " + departmentId));
     }
 
     private EmployeeResponse toResponse(Employee employee) {
+
         Department department = employee.getDepartment();
+
         return EmployeeResponse.builder()
                 .id(employee.getId())
                 .name(employee.getName())
