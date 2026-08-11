@@ -7,13 +7,11 @@ import com.example.employeeapp.exception.DepartmentNotFoundException;
 import com.example.employeeapp.repository.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
@@ -27,13 +25,11 @@ public class DepartmentService {
         return toResponse(saved);
     }
 
-    @Transactional(readOnly = true)
     public DepartmentResponse getById(Long id) {
         Department department = findDepartmentOrThrow(id);
         return toResponse(department);
     }
 
-    @Transactional(readOnly = true)
     public List<DepartmentResponse> getAll() {
         return departmentRepository.findAll()
                 .stream()

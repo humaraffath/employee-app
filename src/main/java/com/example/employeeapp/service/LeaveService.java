@@ -15,7 +15,6 @@ import com.example.employeeapp.repository.LeaveApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +23,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LeaveService {
 
     private final EmployeeRepository employeeRepository;
@@ -50,7 +48,6 @@ public class LeaveService {
         return toResponse(saved);
     }
 
-    @Transactional
     @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
     public LeaveApplicationResponse approve(Long leaveApplicationId) {
         LeaveApplication leaveApplication = findLeaveApplicationOrThrow(leaveApplicationId);
@@ -84,12 +81,10 @@ public class LeaveService {
         return toResponse(updated);
     }
 
-    @Transactional(readOnly = true)
     public LeaveApplicationResponse getById(Long id) {
         return toResponse(findLeaveApplicationOrThrow(id));
     }
 
-    @Transactional(readOnly = true)
     public List<LeaveApplicationResponse> getAll() {
         return leaveApplicationRepository.findAll()
                 .stream()
@@ -97,7 +92,6 @@ public class LeaveService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<LeaveApplicationResponse> getByEmployee(Long employeeId) {
         return leaveApplicationRepository.findByEmployeeId(employeeId)
                 .stream()
@@ -105,7 +99,6 @@ public class LeaveService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<LeaveApplicationResponse> getByStatus(LeaveStatus status) {
         return leaveApplicationRepository.findByStatus(status)
                 .stream()

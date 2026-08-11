@@ -12,13 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
@@ -36,13 +34,11 @@ public class EmployeeService {
         return toResponse(saved);
     }
 
-    @Transactional(readOnly = true)
     public EmployeeResponse getById(Long id) {
         Employee employee = findEmployeeOrThrow(id);
         return toResponse(employee);
     }
 
-    @Transactional(readOnly = true)
     public List<EmployeeResponse> getAll() {
         return employeeRepository.findAll()
                 .stream()
