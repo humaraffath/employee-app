@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Loads {@link Employee} instances (which implement {@link UserDetails})
- * for Spring Security authentication, using the employee's email as the username.
+ * for Spring Security authentication, using the employee's email as the
+ * username.
  */
 @Service
 @RequiredArgsConstructor

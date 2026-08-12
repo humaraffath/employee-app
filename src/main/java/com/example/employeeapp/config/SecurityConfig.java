@@ -18,59 +18,66 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final EmployeeUserDetailsService employeeUserDetailsService;
-    private final JwtService jwtService;
-    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    private final RestAccessDeniedHandler restAccessDeniedHandler;
+        private final EmployeeUserDetailsService employeeUserDetailsService;
+        private final JwtService jwtService;
+        private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+        private final RestAccessDeniedHandler restAccessDeniedHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder(); //hashing
+        }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(employeeUserDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder);
-        return authenticationProvider;
-    }
+        @Bean
+        public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
+                DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(
+                                employeeUserDetailsService);
+                authenticationProvider.setPasswordEncoder(passwordEncoder);
+                return authenticationProvider;
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+                        throws Exception {
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/employees/*/leaves")
-                                .hasAnyRole("EMPLOYEE", "HR", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/employees/*/leaves")
-                                .hasAnyRole("EMPLOYEE", "HR", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/employees/**").hasAnyRole("HR", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/employees/**").hasAnyRole("HR", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAnyRole("HR", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/manager/leaves").hasAnyRole("HR", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/manager/leaves/**").hasAnyRole("HR", "ADMIN")
-                        .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(restAuthenticationEntryPoint)
-                        .accessDeniedHandler(restAccessDeniedHandler))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/employees/*/leaves")
+                                                .hasAnyRole("EMPLOYEE", "HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.POST, "/api/employees/*/leaves")
+                                                .hasAnyRole("EMPLOYEE", "HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/api/employees/**")
+                                                .hasAnyRole("HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.POST, "/api/employees/**")
+                                                .hasAnyRole("HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.PUT, "/api/employees/**")
+                                                .hasAnyRole("HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.DELETE, "/api/employees/**")
+                                                .hasRole("ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/api/manager/leaves")
+                                                .hasAnyRole("HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.POST, "/api/manager/leaves/**")
+                                                .hasAnyRole("HR", "ADMIN")
+                                                .anyRequest().authenticated())
+                                .httpBasic(Customizer.withDefaults())
+                                .exceptionHandling(exceptionHandling -> exceptionHandling
+                                                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                                                .accessDeniedHandler(restAccessDeniedHandler))
+                                .addFilterBefore(new JwtAuthenticationFilter(jwtService),
+                                                UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

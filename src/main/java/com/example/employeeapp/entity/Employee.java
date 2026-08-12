@@ -39,7 +39,7 @@ public class Employee implements UserDetails {
     private String name;
 
     @Column(nullable = false, unique = true)
-    private String email; //username
+    private String email; // username
 
     @Column(nullable = false)
     private String password;
