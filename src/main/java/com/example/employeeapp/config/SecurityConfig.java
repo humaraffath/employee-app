@@ -18,17 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Spring Security configuration wiring together the custom
- * {@link EmployeeUserDetailsService}, a {@link PasswordEncoder}, the
- * {@link AuthenticationManager} used to authenticate login requests, the
- * {@link JwtAuthenticationFilter} used to authenticate subsequent requests
- * bearing a JWT, and REST-friendly {@link RestAuthenticationEntryPoint} /
- * {@link RestAccessDeniedHandler} for 401/403 responses.
- *
- * {@code /api/auth/**} is open to unauthenticated requests; everything else
- * requires authentication.
- */
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

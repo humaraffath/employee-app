@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +27,7 @@ public class LeaveController {
 
     @PostMapping("/api/employees/{employeeId}/leaves")
     public ResponseEntity<LeaveApplicationResponse> apply(@PathVariable Long employeeId,
-                                                            @Valid @RequestBody LeaveApplicationRequest request) {
+            @Valid @RequestBody LeaveApplicationRequest request) {
         LeaveApplicationResponse response = leaveService.apply(employeeId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -36,16 +37,13 @@ public class LeaveController {
         return ResponseEntity.ok(leaveService.getByEmployee(employeeId));
     }
 
-    @GetMapping("/api/leaves")
-    public ResponseEntity<List<LeaveApplicationResponse>> getAll() {
-        return ResponseEntity.ok(leaveService.getAll());
-    }
-
     @GetMapping("/api/manager/leaves")
-    public ResponseEntity<List<LeaveApplicationResponse>> getForManager(
+    @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
+    public ResponseEntity<List<LeaveApplicationResponse>> getAll(
             @RequestParam(required = false) LeaveStatus status) {
-        LeaveStatus effectiveStatus = status != null ? status : LeaveStatus.PENDING;
-        return ResponseEntity.ok(leaveService.getByStatus(effectiveStatus));
+        return ResponseEntity.ok(status != null
+                ? leaveService.getByStatus(status)
+                : leaveService.getAll());
     }
 
     @PostMapping("/api/manager/leaves/{leaveId}/approve")
@@ -55,7 +53,7 @@ public class LeaveController {
 
     @PostMapping("/api/manager/leaves/{leaveId}/reject")
     public ResponseEntity<LeaveApplicationResponse> reject(@PathVariable Long leaveId,
-                                                            @Valid @RequestBody LeaveDecisionRequest request) {
+            @Valid @RequestBody LeaveDecisionRequest request) {
         return ResponseEntity.ok(leaveService.reject(leaveId, request));
     }
 }
