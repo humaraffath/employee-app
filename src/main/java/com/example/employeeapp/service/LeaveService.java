@@ -13,7 +13,11 @@ import com.example.employeeapp.exception.LeaveApplicationNotFoundException;
 import com.example.employeeapp.repository.EmployeeRepository;
 import com.example.employeeapp.repository.LeaveApplicationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +36,8 @@ public class LeaveService {
     public LeaveApplicationResponse apply(
             Long employeeId,
             LeaveApplicationRequest request) {
+
+        assertSelfOrPrivileged(employeeId);
 
         Employee employee = findEmployeeOrThrow(employeeId);
 
@@ -133,6 +139,8 @@ public class LeaveService {
     public List<LeaveApplicationResponse> getByEmployee(
             Long employeeId) {
 
+        assertSelfOrPrivileged(employeeId);
+
         return leaveApplicationRepository
                 .findByEmployeeId(employeeId)
                 .stream()
@@ -206,6 +214,39 @@ public class LeaveService {
                 .orElseThrow(() -> new LeaveApplicationNotFoundException(
                         "Leave application not found with id: "
                                 + id));
+    }
+
+    /**
+     * Ensures the caller is either acting on their own employee record, or
+     * holds an HR/ADMIN role entitled to act on behalf of any employee.
+     * Prevents an authenticated EMPLOYEE from viewing or submitting leave
+     * applications for another employee by manipulating the path variable.
+     */
+    private void assertSelfOrPrivileged(Long employeeId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication required");
+        }
+
+        boolean isPrivileged = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority -> authority.equals("ROLE_HR") || authority.equals("ROLE_ADMIN"));
+
+        if (isPrivileged) {
+            return;
+        }
+
+        String email = authentication.getName();
+
+        Employee employee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("Authenticated employee not found"));
+
+        if (!employee.getId().equals(employeeId)) {
+            throw new AccessDeniedException(
+                    "You are not allowed to access another employee's leave records");
+        }
     }
 
     private LeaveApplicationResponse toResponse(
