@@ -55,6 +55,11 @@ export function AppNavbar() {
                     My Leaves
                   </NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/ai-chat">
+                    AI Chat
+                  </NavLink>
+                </li>
                 {isManager && (
                   <li className="nav-item">
                     <NavLink className="nav-link" to="/manager-leaves">

@@ -36,7 +36,7 @@ public class SecurityConfig {
 
         @Bean
         public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder(); //hashing
+                return new BCryptPasswordEncoder(); // hashing
         }
 
         @Bean
@@ -76,6 +76,8 @@ public class SecurityConfig {
                                                 .hasAnyRole("HR", "ADMIN")
                                                 .requestMatchers(HttpMethod.POST, "/api/manager/leaves/**")
                                                 .hasAnyRole("HR", "ADMIN")
+                                                .requestMatchers(HttpMethod.POST, "/api/chat/**")
+                                                .hasAnyRole("EMPLOYEE", "HR", "ADMIN")
                                                 .anyRequest().authenticated())
                                 .httpBasic(Customizer.withDefaults())
                                 .exceptionHandling(exceptionHandling -> exceptionHandling

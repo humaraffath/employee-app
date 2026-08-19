@@ -144,3 +144,29 @@ textarea.form-control {
   transform: translateY(-3px);
   box-shadow: 0 0.8rem 1.5rem rgba(11, 16, 32, 0.45);
 }
+
+.chat-panel {
+  min-height: 420px;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-bubble-user {
+  background: linear-gradient(135deg, rgba(142, 92, 246, 0.22) 0%, rgba(109, 59, 200, 0.22) 100%);
+}
+
+.chat-bubble-assistant {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.chat-role-label {
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}

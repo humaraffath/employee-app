@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppNavbar } from './components/AppNavbar.jsx'
 import { ProtectedRoute } from './components/ProtectedRoute.jsx'
+import { ChatPage } from './pages/ChatPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { DepartmentsPage } from './pages/DepartmentsPage.jsx'
 import { EmployeesPage } from './pages/EmployeesPage.jsx'
@@ -39,6 +40,14 @@ function App() {
             element={
               <ProtectedRoute roles={['HR', 'ADMIN']}>
                 <EmployeesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
               </ProtectedRoute>
             }
           />
