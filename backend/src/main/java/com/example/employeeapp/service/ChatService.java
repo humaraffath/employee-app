@@ -1,6 +1,7 @@
 package com.example.employeeapp.service;
 
 import com.example.employeeapp.dto.ChatRequest;
+import com.example.employeeapp.ai.EmployeeTools;
 import com.example.employeeapp.dto.ChatMessageResponse;
 import com.example.employeeapp.dto.ChatResponse;
 import com.example.employeeapp.entity.Conversation;
@@ -25,7 +26,8 @@ public class ChatService {
                         ChatClient.Builder chatClientBuilder,
                         ChatMemory chatMemory,
                         ConversationService conversationService,
-                        VectorStore vectorStore) {
+                        VectorStore vectorStore,
+                        EmployeeTools employeeTools) {
 
                 this.chatMemory = chatMemory;
                 this.conversationService = conversationService;
@@ -34,6 +36,7 @@ public class ChatService {
                                 .defaultAdvisors(
                                                 MessageChatMemoryAdvisor.builder(chatMemory).build(),
                                                 QuestionAnswerAdvisor.builder(vectorStore).build())
+                                .defaultTools(employeeTools)
                                 .build();
         }
 
@@ -58,6 +61,19 @@ public class ChatService {
 
                 String response = chatClient
                                 .prompt()
+                                .system("""
+                                                You have access to document context and application tools.
+
+                                                Use the document context only for questions that can be answered
+                                                from the uploaded documents.
+
+                                                If the user asks for live employee data, employee records,
+                                                database information, or information from the application,
+                                                use the appropriate tool instead.
+
+                                                Do not say that information is unavailable just because it
+                                                is not present in the document if an appropriate tool is available.
+                                                """)
                                 .user(request.message())
                                 .advisors(advisor -> advisor.param(
                                                 ChatMemory.CONVERSATION_ID,
