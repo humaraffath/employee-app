@@ -1,17 +1,22 @@
 package com.example.employeeapp.service;
 
 import com.example.employeeapp.dto.ChatRequest;
+import com.example.employeeapp.dto.ChatMessageResponse;
 import com.example.employeeapp.dto.ChatResponse;
 import com.example.employeeapp.entity.Conversation;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ChatService {
 
     private final ChatClient chatClient;
+    private final ChatMemory chatMemory;
     private final ConversationService conversationService;
 
     public ChatService(
@@ -19,6 +24,7 @@ public class ChatService {
             ChatMemory chatMemory,
             ConversationService conversationService) {
 
+        this.chatMemory = chatMemory;
         this.conversationService = conversationService;
 
         this.chatClient = chatClientBuilder
@@ -58,5 +64,25 @@ public class ChatService {
         return new ChatResponse(
                 conversation.getId(),
                 response);
+    }
+
+    public List<ChatMessageResponse> getConversationMessages(
+            Long conversationId,
+            String email) {
+
+        conversationService.getConversation(
+                conversationId,
+                email);
+
+        return chatMemory
+                .get(conversationId.toString())
+                .stream()
+                .map(this::toChatMessageResponse)
+                .toList();
+    }
+
+    private ChatMessageResponse toChatMessageResponse(Message message) {
+        String role = message.getMessageType().name().toLowerCase();
+        return new ChatMessageResponse(role, message.getText());
     }
 }

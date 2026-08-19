@@ -17,8 +17,6 @@
             <type>pom</type>
             <scope>import</scope>
         </dependency>
-
-
     	<dependency>
     		<groupId>org.springframework.ai</groupId>
     		<artifactId>spring-ai-bom</artifactId>
@@ -128,6 +126,16 @@
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-starter-model-chat-memory-repository-jdbc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-vector-store-chroma</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-pdf-document-reader</artifactId>
 		</dependency>
 	</dependencies>
 

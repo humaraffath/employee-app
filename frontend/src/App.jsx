@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 import { DepartmentsPage } from './pages/DepartmentsPage.jsx'
 import { EmployeesPage } from './pages/EmployeesPage.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
+import { ManagementPage } from './pages/ManagementPage.jsx'
 import { ManagerLeavesPage } from './pages/ManagerLeavesPage.jsx'
 import { MyLeavesPage } from './pages/MyLeavesPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
@@ -64,6 +65,14 @@ function App() {
             element={
               <ProtectedRoute roles={['HR', 'ADMIN']}>
                 <ManagerLeavesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/management"
+            element={
+              <ProtectedRoute roles={['HR', 'ADMIN']}>
+                <ManagementPage />
               </ProtectedRoute>
             }
           />

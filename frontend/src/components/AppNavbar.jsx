@@ -43,13 +43,6 @@ export function AppNavbar() {
                     Departments
                   </NavLink>
                 </li>
-                {isManager && (
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/employees">
-                      Employees
-                    </NavLink>
-                  </li>
-                )}
                 <li className="nav-item">
                   <NavLink className="nav-link" to="/my-leaves">
                     My Leaves
@@ -57,13 +50,13 @@ export function AppNavbar() {
                 </li>
                 <li className="nav-item">
                   <NavLink className="nav-link" to="/ai-chat">
-                    AI Chat
+                    Chat
                   </NavLink>
                 </li>
                 {isManager && (
                   <li className="nav-item">
-                    <NavLink className="nav-link" to="/manager-leaves">
-                      Manager Leaves
+                    <NavLink className="nav-link" to="/management">
+                      Manage
                     </NavLink>
                   </li>
                 )}

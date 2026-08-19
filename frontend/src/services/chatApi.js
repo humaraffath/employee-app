@@ -1,8 +1,23 @@
 import { httpClient } from '../api/httpClient.js'
 
 export const chatApi = {
-  async sendMessage(message) {
-    const response = await httpClient.post('/api/chat', { message })
+  async sendMessage(message, conversationId = null) {
+    const response = await httpClient.post('/api/chat', { conversationId, message })
+    return response.data
+  },
+
+  async getConversations() {
+    const response = await httpClient.get('/api/conversations')
+    return response.data
+  },
+
+  async createConversation() {
+    const response = await httpClient.post('/api/conversations')
+    return response.data
+  },
+
+  async getConversationMessages(conversationId) {
+    const response = await httpClient.get(`/api/conversations/${conversationId}/messages`)
     return response.data
   },
 }

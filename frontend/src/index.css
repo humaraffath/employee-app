@@ -149,6 +149,32 @@ textarea.form-control {
   min-height: 420px;
 }
 
+.chat-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.chat-history-item {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  border-radius: 12px;
+  padding: 0.75rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.chat-history-item:hover {
+  border-color: rgba(142, 92, 246, 0.55);
+}
+
+.chat-history-item-active {
+  border-color: rgba(142, 92, 246, 0.85);
+  background: rgba(142, 92, 246, 0.18);
+}
+
 .chat-bubble {
   max-width: 80%;
   padding: 0.9rem 1rem;
