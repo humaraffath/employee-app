@@ -39,16 +39,6 @@ export function AppNavbar() {
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/departments">
-                    Departments
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/my-leaves">
-                    My Leaves
-                  </NavLink>
-                </li>
-                <li className="nav-item">
                   <NavLink className="nav-link" to="/ai-chat">
                     Chat
                   </NavLink>

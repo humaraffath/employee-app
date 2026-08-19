@@ -10,6 +10,7 @@ import { ManagementPage } from './pages/ManagementPage.jsx'
 import { ManagerLeavesPage } from './pages/ManagerLeavesPage.jsx'
 import { MyLeavesPage } from './pages/MyLeavesPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
+import { RagUploadPage } from './pages/RagUploadPage.jsx'
 import { UnauthorizedPage } from './pages/UnauthorizedPage.jsx'
 
 function App() {
@@ -73,6 +74,14 @@ function App() {
             element={
               <ProtectedRoute roles={['HR', 'ADMIN']}>
                 <ManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rag-upload"
+            element={
+              <ProtectedRoute roles={['ADMIN']}>
+                <RagUploadPage />
               </ProtectedRoute>
             }
           />

@@ -20,4 +20,15 @@ export const chatApi = {
     const response = await httpClient.get(`/api/conversations/${conversationId}/messages`)
     return response.data
   },
+
+  async uploadPdf(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await httpClient.post('/api/documents/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
 }

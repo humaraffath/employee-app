@@ -1,25 +1,47 @@
 import { Link } from 'react-router-dom'
-
-const managementLinks = [
-  {
-    to: '/employees',
-    title: 'Employees',
-    description: 'Manage employee profiles, roles, and status.',
-  },
-  {
-    to: '/manager-leaves',
-    title: 'Leave Approvals',
-    description: 'Review and approve pending leave applications.',
-  },
-]
+import { useAuth } from '../auth/useAuth.js'
 
 export function ManagementPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
+  const managementLinks = [
+    {
+      to: '/departments',
+      title: 'Departments',
+      description: 'Create and manage departments.',
+    },
+    ...(isAdmin
+      ? [
+          {
+            to: '/employees',
+            title: 'Employees',
+            description: 'Manage employee profiles, roles, and status.',
+          },
+          {
+            to: '/manager-leaves',
+            title: 'Leave Approvals',
+            description: 'Review and approve pending leave applications.',
+          },
+          {
+            to: '/my-leaves',
+            title: 'Leaves',
+            description: 'View your leave applications.',
+          },
+          {
+            to: '/rag-upload',
+            title: 'RAG Upload',
+            description: 'Upload PDF files for RAG knowledge.',
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div className="row justify-content-center">
       <div className="col-lg-9">
         <div className="mb-3">
           <h1 className="h3 page-title mb-1">Management</h1>
-          <p className="text-muted mb-0">Quick access to manager-only workflows.</p>
+          <p className="text-muted mb-0">Minimal admin workspace.</p>
         </div>
         <div className="row g-3">
           {managementLinks.map((item) => (

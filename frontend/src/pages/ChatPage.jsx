@@ -11,6 +11,16 @@ function createMessage(role, content) {
   }
 }
 
+function createConversationTitle(content) {
+  const words = content
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 3)
+
+  return words.length ? words.join(' ') : 'New Conversation'
+}
+
 function formatConversationDate(isoString) {
   if (!isoString) {
     return ''
@@ -51,7 +61,6 @@ export function ChatPage() {
   const [newConversationMessages, setNewConversationMessages] = useState([])
   const [draft, setDraft] = useState('')
   const [isSending, setIsSending] = useState(false)
-  const [isCreatingConversation, setIsCreatingConversation] = useState(false)
   const [isLoadingConversations, setIsLoadingConversations] = useState(true)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -104,14 +113,19 @@ export function ChatPage() {
     }
   }, [])
 
-  const syncConversations = async () => {
+  const syncConversations = async (fallbackConversation = null) => {
     const data = await chatApi.getConversations()
-    setConversations(data)
+    const mergedConversations =
+      fallbackConversation && !data.some((item) => item.id === fallbackConversation.id)
+        ? [fallbackConversation, ...data]
+        : data
+
+    setConversations(mergedConversations)
     setSelectedConversationId((current) => {
-      if (current && data.some((item) => item.id === current)) {
+      if (current && mergedConversations.some((item) => item.id === current)) {
         return current
       }
-      return data[0]?.id ?? null
+      return mergedConversations[0]?.id ?? null
     })
   }
 
@@ -192,13 +206,28 @@ export function ChatPage() {
       const assistantMessage = createMessage('assistant', data.response)
 
       if (currentConversationId === null) {
+        const timestamp = new Date().toISOString()
+        const fallbackConversation = {
+          id: data.conversationId,
+          title: createConversationTitle(trimmedMessage),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        }
         const completedConversation = [...optimisticNewConversationMessages, assistantMessage]
         setMessagesByConversation((current) => ({
           ...current,
           [data.conversationId]: completedConversation,
         }))
+        setConversations((current) => {
+          if (current.some((conversation) => conversation.id === data.conversationId)) {
+            return current
+          }
+          return [fallbackConversation, ...current]
+        })
         setSelectedConversationId(data.conversationId)
         setNewConversationMessages([])
+        await syncConversations(fallbackConversation)
+        return
       } else {
         setMessagesByConversation((current) => ({
           ...current,
@@ -240,27 +269,14 @@ export function ChatPage() {
               <button
                 type="button"
                 className="btn btn-outline-light btn-sm"
-                onClick={async () => {
+                onClick={() => {
                   setErrorMessage('')
-                  setIsCreatingConversation(true)
-                  try {
-                    const conversation = await chatApi.createConversation()
-                    setConversations((current) => [conversation, ...current.filter((item) => item.id !== conversation.id)])
-                    setMessagesByConversation((current) => ({
-                      ...current,
-                      [conversation.id]: [],
-                    }))
-                    setSelectedConversationId(conversation.id)
-                    setNewConversationMessages([])
-                  } catch (error) {
-                    setErrorMessage(getErrorMessage(error, 'Failed to create conversation.'))
-                  } finally {
-                    setIsCreatingConversation(false)
-                  }
+                  setSelectedConversationId(null)
+                  setNewConversationMessages([])
                 }}
-                disabled={isSending || isCreatingConversation}
+                disabled={isSending}
               >
-                {isCreatingConversation ? 'Creating...' : 'New'}
+                New
               </button>
             </div>
             <div className="chat-history-list">
@@ -271,6 +287,15 @@ export function ChatPage() {
               ) : (
                 conversations.map((conversation) => {
                   const isActive = conversation.id === selectedConversationId
+                  const isDefaultTitle =
+                    !conversation.title || conversation.title.trim().toLowerCase() === 'new conversation'
+                  const firstUserMessage = (messagesByConversation[conversation.id] ?? []).find(
+                    (message) => message.role === 'user' && message.content.trim(),
+                  )
+                  const displayTitle =
+                    isDefaultTitle && firstUserMessage
+                      ? createConversationTitle(firstUserMessage.content)
+                      : conversation.title || `Conversation ${conversation.id}`
                   return (
                     <button
                       key={conversation.id}
@@ -282,7 +307,7 @@ export function ChatPage() {
                       }}
                       disabled={isSending}
                     >
-                      <div className="fw-semibold text-start">{conversation.title || `Conversation ${conversation.id}`}</div>
+                      <div className="fw-semibold text-start">{displayTitle}</div>
                       <div className="small text-muted text-start">
                         {formatConversationDate(conversation.updatedAt || conversation.createdAt)}
                       </div>
@@ -302,46 +327,42 @@ export function ChatPage() {
         </div>
 
         {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-
         <div className="card mb-3">
-          <div className="card-body chat-panel">
-            {activeMessages.length === 0 ? (
-              <div className="text-center py-5 text-muted">
-                {isLoadingMessages
-                  ? 'Loading messages...'
-                  : selectedConversationId === null
-                  ? 'Start a new conversation by sending your first message.'
-                  : 'No messages stored for this conversation yet.'}
-              </div>
-            ) : (
-              <div className="d-flex flex-column gap-3">
-                {activeMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={message.role === 'user' ? 'chat-bubble chat-bubble-user ms-auto' : 'chat-bubble chat-bubble-assistant'}
-                  >
-                    <div className="small text-uppercase mb-1 chat-role-label">
-                      {message.role === 'user' ? 'You' : 'AI'}
+          <div className="card-body chat-shell">
+            <div className="chat-panel">
+              {activeMessages.length === 0 ? (
+                <div className="text-center py-5 text-muted">
+                  {isLoadingMessages
+                    ? 'Loading messages...'
+                    : selectedConversationId === null
+                    ? 'Start a new conversation by sending your first message.'
+                    : 'No messages stored for this conversation yet.'}
+                </div>
+              ) : (
+                <div className="d-flex flex-column gap-3">
+                  {activeMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={message.role === 'user' ? 'chat-bubble chat-bubble-user ms-auto' : 'chat-bubble chat-bubble-assistant'}
+                    >
+                      <div className="small text-uppercase mb-1 chat-role-label">
+                        {message.role === 'user' ? 'You' : 'AI'}
+                      </div>
+                      <div>{message.content}</div>
                     </div>
-                    <div>{message.content}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="chat-message" className="form-label">
-                  Message
-                </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <form onSubmit={handleSubmit} className="chat-composer">
+              <label htmlFor="chat-message" className="form-label">
+                Message
+              </label>
+              <div className="d-flex flex-column gap-2">
                 <textarea
                   id="chat-message"
-                  className="form-control"
-                  rows="4"
+                  className="form-control chat-input"
+                  rows="3"
                   placeholder="Type your message here..."
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
@@ -356,11 +377,11 @@ export function ChatPage() {
                   }}
                   disabled={isSending}
                 />
-              </div>
-              <div className="d-flex justify-content-end">
-                <button type="submit" className="btn btn-primary" disabled={isSending || !draft.trim()}>
-                  {isSending ? 'Sending...' : 'Send Message'}
-                </button>
+                <div className="d-flex justify-content-end">
+                  <button type="submit" className="btn btn-primary" disabled={isSending || !draft.trim()}>
+                    {isSending ? 'Sending...' : 'Send Message'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
